@@ -8,20 +8,20 @@ from sympy import Matrix
 
 #////////////////////////////// CONSTANTS //////////////////////////////////////////////
 
-Diccionario_encrypt = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 
+Dictionary_encrypt = {'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4, 'F': 5, 'G': 6, 'H': 7, 'I': 8, 'J': 9, 'K': 10, 'L': 11, 'M': 12, 'N': 13, 'O': 14, 'P': 15, 
                       'Q': 16, 'R': 17, 'S': 18, 'T': 19, 'U': 20, 'V': 21, 'W': 22, 'X': 23, 'Y': 24, 'Z': 25, '0': 26, '1': 27, '2': 28, '3': 29, '4': 30,
                       '5': 31, '6': 32, '7': 33, '8': 34, '9': 35, '.': 36, ',': 37, ':': 38, '?': 39, ' ': 40, 'a': 41, 'b': 42, 'c': 43, 'd': 44, 'e': 45,
                       'f': 46, 'g': 47, 'h': 48, 'i': 49, 'j': 50, 'k': 51, 'l': 52, 'm': 53, 'n': 54, 'o': 55, 'p': 56, 'q': 57, 'r': 58, 's': 59, 't': 60,
                       'u': 61, 'v': 62, 'w': 63, 'x': 64, 'y': 65, 'z': 66}
 
-Diccionario_decrypt = {'0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E', '5': 'F', '6': 'G', '7': 'H', '8': 'I', '9': 'J', '10': 'K', '11': 'L', '12': 'M',
+Dictionary_decrypt = {'0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'E', '5': 'F', '6': 'G', '7': 'H', '8': 'I', '9': 'J', '10': 'K', '11': 'L', '12': 'M',
                        '13': 'N', '14': 'O', '15': 'P', '16': 'Q', '17': 'R', '18': 'S', '19': 'T', '20': 'U', '21': 'V', '22': 'W', '23': 'X', '24': 'Y',
                        '25': 'Z', '26': '0', '27': '1', '28': '2', '29': '3', '30': '4', '31': '5', '32': '6', '33': '7', '34': '8', '35': '9', '36': '.',
                        '37': ',', '38': ':', '39': '?', '40': ' ', '41': 'a', '42': 'b', '43': 'c', '44': 'd', '45': 'e', '46': 'f', '47': 'g', '48': 'h',
                        '49': 'i', '50': 'j', '51': 'k', '52': 'l', '53': 'm', '54': 'n', '55': 'o', '56': 'p', '57': 'q', '58': 'r', '59': 's', '60': 't',
                        '61': 'u', '62': 'v', '63': 'w', '64': 'x', '65': 'y', '66': 'z'}
 
-Modulo = 67
+Mod_To_InvertMatrix = 67
 
 #////////////////////////////// EXCEPTIONS //////////////////////////////////////////////
 
@@ -121,7 +121,7 @@ def hill_cipher(message, key):
 
         for i in range(0, len(message)):
             try:
-                matrix_mensaje.append(Diccionario_encrypt[message[i]])
+                matrix_mensaje.append(Dictionary_encrypt[message[i]])
             except KeyError:
                 raise CaracteresInvalidosMensaje
 
@@ -133,14 +133,14 @@ def hill_cipher(message, key):
 
         cifrado = np.matmul(key, matrix_mensaje)
 
-        # Se obtiene el modulo sobre el diccionario de cada celda
+        # Se obtiene el Mod_To_InvertMatrix sobre el diccionario de cada celda
 
-        cifrado = cifrado % Modulo
+        cifrado = cifrado % Mod_To_InvertMatrix
 
         # Se codifica de valores numericos a los del diccionario, añadiendo a ciphertext el valor en el diccionario pasandole como indice la i posicion de la variable cifrado
 
         for i in range(0, len(cifrado)):
-            ciphertext += Diccionario_decrypt[str(cifrado[i])]
+            ciphertext += Dictionary_decrypt[str(cifrado[i])]
     else:
 
     # Si el tamaño del mensaje es menor o igual al tamaño de la clave
@@ -162,7 +162,7 @@ def hill_cipher(message, key):
             # Crear la matriz para el bloque
 
             for i in range(0, len(bloque)):
-                list_temp.append(Diccionario_encrypt[bloque[i]])
+                list_temp.append(Dictionary_encrypt[bloque[i]])
 
             # Se crea la matriz de ese bloque
 
@@ -174,14 +174,14 @@ def hill_cipher(message, key):
             except Exception:
                 raise MultiplicacionInvalidaDeMatriz
 
-            # Se obtiene el modulo sobre el diccionario de cada celda
+            # Se obtiene el Mod_To_InvertMatrix sobre el diccionario de cada celda
 
-            cifrado = cifrado % Modulo
+            cifrado = cifrado % Mod_To_InvertMatrix
 
             # Se codifica de valores numericos a los del diccionario, añadiendo a ciphertext el valor en el diccionario pasandole como indice la i posicion de la variable cifrado
 
             for i in range(0, len(cifrado)):
-                ciphertext_temp += Diccionario_decrypt[str(cifrado[i])]
+                ciphertext_temp += Dictionary_decrypt[str(cifrado[i])]
 
             # Se inicializan las variables para el nuevo bloque
 
@@ -215,9 +215,9 @@ def hill_decipher(message, key):
     matrix_mensaje = [message[i:i + len(key)] for i in range(0,
                       len(message), len(key))]
 
-    # Se calcula la matriz inversa aplicando el modulo
+    # Se calcula la matriz inversa aplicando el Mod_To_InvertMatrix
     try:
-        matrix_inversa = Matrix(key).inv_mod(Modulo)
+        matrix_inversa = Matrix(key).inv_mod(Mod_To_InvertMatrix)
     except ValueError:
         raise MatrizNoEsInvertible
 
@@ -236,7 +236,7 @@ def hill_decipher(message, key):
         # Se encripta el mensaje encriptado
 
         for i in range(0, len(bloque)):
-            list_temp.append(Diccionario_encrypt[bloque[i]])
+            list_temp.append(Dictionary_encrypt[bloque[i]])
 
         # Se convierte a matriz
 
@@ -246,14 +246,14 @@ def hill_decipher(message, key):
 
         cifrado = np.matmul(matrix_inversa, matrix_encrypt)
 
-        # Se le aplica a cada elemento el modulo
+        # Se le aplica a cada elemento el Mod_To_InvertMatrix
 
-        cifrado = np.remainder(cifrado, Modulo).flatten()
+        cifrado = np.remainder(cifrado, Mod_To_InvertMatrix).flatten()
 
         # Se desencripta el mensaje
 
         for i in range(0, len(cifrado)):
-            plaintext_temp += Diccionario_decrypt[str(int(cifrado[i]))]
+            plaintext_temp += Dictionary_decrypt[str(int(cifrado[i]))]
 
         matrix_encrypt = []
         list_temp = []

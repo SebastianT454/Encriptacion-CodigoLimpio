@@ -7,7 +7,7 @@ from Gui.Console.EncryptionGUI_Console import *
 
 #////////////////////////////// FUNCTIONS //////////////////////////////////////////////
 
-def Mostrar_error(err):
+def ShowError(err):
     print(" ")
     print("Error:", err)
     print(" ")
@@ -31,7 +31,7 @@ def main():
                         raise Exception(f"El mensaje debe tener más de un valor." )
 
                 except Exception as err:
-                    Mostrar_error( err )
+                    ShowError( err )
 
         # Mensaje formateado.
         print("Tu mensaje:", message)
@@ -62,7 +62,7 @@ def main():
                     print("Opcion invalida, solamente es valido 'e' o 'd'.")
 
             except Exception as err:
-                Mostrar_error( err )
+                ShowError( err )
 
             # Acabar el programa.
             print("\n Si ingresa 'y' podra encriptar o desencriptar nuevamente.")

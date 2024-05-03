@@ -14,7 +14,7 @@ class UI_GenerateKey:
     """
 
     @staticmethod
-    def Mostrar_error(err):
+    def ShowError(err):
         print(" ")
         print("Error:", err)
         print(" ")
@@ -36,7 +36,7 @@ class UI_GenerateKey:
                 
                 break  # Exit the loop if successful conversion
             except Exception as err:
-                UI_GenerateKey.Mostrar_error( err )
+                UI_GenerateKey.ShowError( err )
 
         print(f"La matrix tendra la misma cantidad de columnas y filas, {MatrixSize}")
         print(" ")
@@ -47,78 +47,77 @@ class UI_GenerateKey:
         """
         Funcion que verifica si la clave es valida para generarse.
         """
-        TamanoClave = MatrixSize
+        KeySize = MatrixSize
 
         print("La clave debe estar en el formato 1,2,3,4.. n")
         print("La cantidad de elementos debe ser igual al tamaño de la matrix ^ 2")
-        Clave = input("Ingrese la clave: ")
+        Key = input("Ingrese la clave: ")
 
         try:
             # Verificar que la clave tenga algo.
-            if len(Clave) == 0:
+            if len(Key) == 0:
                 raise Exception(f"La clave no tiene nada, esta vacia." )
             
             # Obteniendo el tamaño de la matrix
-            Tamano_matrix = int(TamanoClave) ** 2
+            Matrix_Size = int(KeySize) ** 2
             # Obteniendo la cantidad de enteros en la clave
-            Cnt_enteros = 0
+            Cnt_Integers = 0
 
             # Seperar todos los elementos en una lista, se separa cuando se encuentre una coma.
-            Lista_string = Clave.split(",")
-            Lista_string = [elemento.strip() for elemento in Lista_string] # Eliminando todos los espacios vacios que hayan.
+            StringArray = Key.split(",")
+            StringArray = [Element.strip() for Element in StringArray] # Eliminando todos los espacios vacios que hayan.
 
             # Obtener la cantidad de elementos y verificar si es un entero.
-            for Elemento in Lista_string:
-                if Elemento.isdigit():
-                    Cnt_enteros += 1
+            for Element in StringArray:
+                if Element.isdigit():
+                    Cnt_Integers += 1
                 else:
                     raise ValueError(f"Hay elementos que no son entero o están vacios.")
 
             # Verificar que la clave tenga la cantidad suficiente de elementos.
-            if Cnt_enteros != Tamano_matrix:
-                raise ValueError(f"Elementos incompletos (se necesitan {Tamano_matrix} enteros y {Tamano_matrix-1} comas) NO puede ser mayor o menor.")
+            if Cnt_Integers != Matrix_Size:
+                raise ValueError(f"Elementos incompletos (se necesitan {Matrix_Size} enteros y {Matrix_Size-1} comas) NO puede ser mayor o menor.")
 
-            return Clave
+            return Key
         
         except Exception as err:
-            UI_GenerateKey.Mostrar_error(err)
+            UI_GenerateKey.ShowError(err)
             return False
 
     @staticmethod
     def UI_GenerateManualKey(MatrixSize, Key):
-        TamanoClave = MatrixSize
-        Clave = Key
+        KeySize = MatrixSize
 
-        # Transformar cada elemento a entero.
-        Lista_string = Clave.split(",")
-        Lista_enteros = [int(elemento) for elemento in Lista_string]
+        # Transformar cada Element a entero.
+        StringArray = Key.split(",")
+        IntegersArray = [int(Element) for Element in StringArray]
 
-        Clave_Matrix = []
+        MatrixKey = []
 
-        for _ in range(TamanoClave):
-            ListaFila = []
-            for _ in range(TamanoClave):
-                Entero = Lista_enteros.pop(0)
-                ListaFila.append(Entero)
+        for _ in range(KeySize):
+            RowArray = []
+            for _ in range(KeySize):
+                Integer = IntegersArray.pop(0)
+                RowArray.append(Integer)
             # Append the row to the Key
-            Clave_Matrix.append(ListaFila)
+            MatrixKey.append(RowArray)
 
-        return Clave_Matrix
+        return MatrixKey
 
     @staticmethod
     def UI_GetManualKeyMatrix(MatrixSize):
         """Creats a manual key with the format 1,2,3,4"""
-        ClaveManual = UI_GenerateKey.UI_ManualKey(MatrixSize)
+        ManualKey = UI_GenerateKey.UI_ManualKey(MatrixSize)
 
         try:
-            if ClaveManual:
-                ClaveMatrix = UI_GenerateKey.UI_GenerateManualKey(MatrixSize, ClaveManual)
-                return ClaveMatrix
+            if ManualKey:
+                MatrixKey = UI_GenerateKey.UI_GenerateManualKey(MatrixSize, ManualKey)
+                return MatrixKey
             else:
                 raise Exception(f"No se pudo generar la clave manual.." )
         
         except Exception as err:
-            UI_GenerateKey.Mostrar_error(err)
+            UI_GenerateKey.ShowError(err)
             return UI_GenerateKey.UI_GetManualKeyMatrix(MatrixSize)
     
     @staticmethod
@@ -131,7 +130,7 @@ class UI_GenerateKey:
     
     @staticmethod
     def Create_key(size):
-        """Prompts user to create a key matrix (manual or automatic)."""
+        """Avisa el usuario si quiere generar su clave de forma automatica o manual."""
         while True:
             choice = input("Ingresar 'm' para ingresar la clave manualmente o 'a' de forma automatica: ")
             if choice == 'm':
