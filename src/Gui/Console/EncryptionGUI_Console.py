@@ -10,15 +10,17 @@ from Encryption.EncryptionLogic import *
 class UI_GenerateKey:
     """
     Se define una clase general para todo lo relacionado en la generacion
-    De claves manuales o automaticas --> hill_genkey(numero)
+    De claves manuales o automaticas
     """
 
+    # Funcion que muestra por consola el error.
     @staticmethod
     def ShowError(err):
         print(" ")
         print("Error:", err)
         print(" ")
 
+    # Funcion que obtiene por consola el tamaño de la matriz.
     @staticmethod
     def UI_GetMatrixSize():
         while True:
@@ -42,6 +44,7 @@ class UI_GenerateKey:
         print(" ")
         return MatrixSize
 
+    # Funcion que obtiene de forma manual la clave para la encriptacion.
     @staticmethod
     def UI_ManualKey(MatrixSize):
         """
@@ -84,6 +87,7 @@ class UI_GenerateKey:
             UI_GenerateKey.ShowError(err)
             return False
 
+    # Funcion que transforma la clave de formato 1,2,3,4 a matriz.
     @staticmethod
     def UI_GenerateManualKey(MatrixSize, Key):
         KeySize = MatrixSize
@@ -104,6 +108,7 @@ class UI_GenerateKey:
 
         return MatrixKey
 
+    # Funcion que gestiona que se cree apropiadamente la clave manual.
     @staticmethod
     def UI_GetManualKeyMatrix(MatrixSize):
         """Creats a manual key with the format 1,2,3,4"""
@@ -120,6 +125,7 @@ class UI_GenerateKey:
             UI_GenerateKey.ShowError(err)
             return UI_GenerateKey.UI_GetManualKeyMatrix(MatrixSize)
     
+    # Funcion que crea una matriz con valores aleatorios.
     @staticmethod
     def UI_GetAutomaticKeyMatrix(MatrixSize):
         print("Creando de forma automatica clave...")
@@ -128,6 +134,7 @@ class UI_GenerateKey:
 
         return Key
     
+    # Funcion que despliega las respectivas interfaces graficas para la generacion de la clave (matriz).
     @staticmethod
     def Create_key(size):
         """Avisa el usuario si quiere generar su clave de forma automatica o manual."""

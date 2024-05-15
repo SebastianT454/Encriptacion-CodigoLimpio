@@ -37,15 +37,37 @@ reconozca la carpeta como un Módulo y pueda hacer import
 
 - Modulos: Existen 3 modulos en el conjunto de subcarpetas **src**, que estan diseñados para la logica y la interfaz del Usuario
   1. Encryption --> EncryptionLogic.py ( Logica y metodos para encriptar el mensaje )
+
   2. Gui -->  Console -->  EncryptionGUI_Console.py ( Gui en Consola )
-  3. Gui -->  Kivy -->  EncryptionGUI_Kivy.py ( Gui en Kivy )
+  3. Gui -->  Kivy -->  EncryptionGUI_Kivy.py ( Gui Principal )
+  4. Gui -->  Kivy -->  LoginGUI_Kivy.py ( Gui de la pestaña Login )
+  5. Gui -->  Kivy -->  MenuGUI_Kivy.py ( Gui de la pestaña Menu )
+  6. Gui -->  GuiLogic -->  Kivy --> EncryptionGUI_KivyLogic.py ( Logica del Gui Principal )
+
+  7. Database -->  Controllers -->  UserController.py ( Controlador para el usuario )
+  8. Database -->  Controllers -->  EncryptionKeyController.py ( Controlador para la clave asociada a un usuario )
+
+  9. Database -->  Models -->  User.py ( Clase de tipo usuario )
+  10. Database -->  Models -->  EncryptionKey.py ( Clase de tipo clave )
 
 ## Uso
 
-Para ejecutar las pruebas unitarias, desde la carpeta src, use el comando
+Para ejecutar las pruebas unitarias de la encriptacion, desde la carpeta src, use el comando
 
 `
   python tests\UnitTests-Encryption.py
+`
+
+Para ejecutar las pruebas unitarias de la base de datos para el usuario, use el comando
+
+`
+  python src\Database\tests\ControllerUserTest.py
+`
+
+Para ejecutar las pruebas unitarias de la base de datos para las claves del usuario, use el comando
+
+`
+  python src\Database\tests\ControllerEncryptionKey.py
 `
 
 Para poder ejecutarlas desde la carpeta raiz, debe indicar la ruta de busqueda donde se encuentran los

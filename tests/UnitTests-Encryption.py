@@ -190,7 +190,7 @@ class Test_CasosError(unittest.TestCase):
 
 if __name__ == '__main__':
 
-    # create a suite with all tests
+    # crear una suite con todas las pruebas
     test_classes_to_run = [Test_CasosNormales, Test_CasosExcepcionales, Test_CasosError]
     loader = unittest.TestLoader()
     suites_list = []
@@ -200,7 +200,7 @@ if __name__ == '__main__':
 
     all_tests_suite = unittest.TestSuite(suites_list)
 
-    # run the test suite with high verbosity
+    # ejecutar el conjunto de pruebas con gran velocidad
     runner = unittest.TextTestRunner(verbosity=2)
     results = runner.run(all_tests_suite)
 

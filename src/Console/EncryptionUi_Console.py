@@ -7,11 +7,13 @@ from Gui.Console.EncryptionGUI_Console import *
 
 #////////////////////////////// FUNCTIONS //////////////////////////////////////////////
 
+# Funcion que muestra una excepcion por consola.
 def ShowError(err):
     print(" ")
     print("Error:", err)
     print(" ")
 
+# Funcion principal de la interfaz grafica.
 def main():
     # Menu para consola
 
@@ -39,11 +41,11 @@ def main():
 
         # Obteniendo la clave en la consola.
         key = UI_GenerateKey.Create_key(UI_GenerateKey.UI_GetMatrixSize())
-        print("\n Key:")
+        print("\n Clave:")
         print(key)
         print(" ")
 
-        # Teniendo un menu para escoger entre incriptar y desencriptar
+        # Teniendo un menu para escoger entre encriptar y desencriptar
         while True:
             choice = input(" Ingrese 'e' para encriptar o 'd' to desencriptar: ")
 

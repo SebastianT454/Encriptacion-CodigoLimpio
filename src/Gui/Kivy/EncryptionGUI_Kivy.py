@@ -18,6 +18,25 @@ sys.path.append("src")
 # Logica de Encriptacion.
 from Encryption.EncryptionLogic import *
 
+# Logica de las funciones kivy
+from Gui.GuiLogic.Kivy.EncryptionGUI_KivyLogic import *
+
+# Modulos de base de datos para el Usuario.
+from Database.Models.User import User
+import Database.Controllers.UserController as UserController
+
+# Modulos de base de datos para la Clave.
+from Database.Models.EncryptionKey import EncryptionKey
+import Database.Controllers.EncryptionKeyController as EncryptionKeyController
+
+#////////////////////////////// GRAPHIC CONTENT //////////////////////////////////////////////
+
+# Importando el apartado grafico del ingreso a la app.
+from LoginGUI_Kivy import LoginScreen
+
+# Importando el apartado grafico del menu de la app.
+from MenuGUI_Kivy import OptionsMenuScreen
+
 #////////////////////////////// FUNCTIONS //////////////////////////////////////////////
 
 # Declare both screens
@@ -33,7 +52,7 @@ class EncryptionMenu(Screen):
         MainContainer = GridLayout(cols = 1 , padding = 20 , spacing = 10)
 
         # Label y text input con el mensaje.
-        MainContainer.add_widget( Label(text="Message", font_size = 20) )
+        MainContainer.add_widget( Label(text="Mensaje", font_size = 20) )
         self.Input_message = TextInput(font_size = 24, multiline = False)
         MainContainer.add_widget(self.Input_message)
 
@@ -46,7 +65,7 @@ class EncryptionMenu(Screen):
         MainContainer.add_widget(Btn_Key)
 
         # Conectar con el callback con el evento press del boton de generar clave.
-        Btn_Key.bind( on_press= self.GenerateAutomaticKey )
+        Btn_Key.bind( on_press = self.GenerateAutomaticKey )
 
         """
         MainContainer.add_widget( Label(text="Key generada", font_size = 20) )
@@ -63,7 +82,7 @@ class EncryptionMenu(Screen):
         # Crear y agregar los labels para la clave
         GridLayout_KeyLabels.add_widget( Label(text="Key", font_size = 20, size_hint = (0.7, 1) ))
 
-        GridLayout_KeyLabels.add_widget( Label(text="Tamano Key", font_size = 20, size_hint = (0.3, 1) ) )
+        GridLayout_KeyLabels.add_widget( Label(text="Tamano Clave", font_size = 20, size_hint = (0.3, 1) ) )
 
         MainContainer.add_widget(GridLayout_KeyLabels)
 
@@ -84,12 +103,17 @@ class EncryptionMenu(Screen):
         GridLayout_KeyButtons = GridLayout( cols = 2 )
 
         # Boton para guardar contraseñas
-        Btn_SavePassword = Button(text="Guardar Contraseña", font_size = 30)
+        Btn_SavePassword = Button(text="Guardar Clave", font_size = 30)
         GridLayout_KeyButtons.add_widget(Btn_SavePassword)
 
-        # Boton para escribir la contraseña asociada en la base de datos
-        Btn_AuthenticationPassword = Button(text="Clave de seguridad", font_size = 30)
-        GridLayout_KeyButtons.add_widget(Btn_AuthenticationPassword)
+        # Conectar con el callback con el evento press del boton guardar contraseña.
+        Btn_SavePassword.bind( on_press= self.SaveKeyPopup )
+
+        Btn_SelectKey = Button(text="Claves Guardadas", font_size = 30)
+        GridLayout_KeyButtons.add_widget(Btn_SelectKey)
+
+        # Conectar con el callback con el evento press del boton de generar clave.
+        Btn_SelectKey.bind( on_press = self.SelectSavedKey )
 
         MainContainer.add_widget(GridLayout_KeyButtons)
 
@@ -111,7 +135,7 @@ class EncryptionMenu(Screen):
         MainContainer.add_widget(Btn_Decrypt)
 
         # Conectar con el callback con el evento press del boton encriptar.
-        Btn_Decrypt.bind( on_press= self.DecryptMessage )
+        Btn_Decrypt.bind( on_press = self.DecryptMessage )
 
         MainContainer.add_widget( Label(text="Mensaje Desencriptado", font_size = 20) )
         self.Input_DecryptedMessage = TextInput(font_size=24)
@@ -123,9 +147,9 @@ class EncryptionMenu(Screen):
         MainContainer.add_widget(Btn_Return_To_Menu)
 
         # Conectar con el callback con el evento press del boton encriptar.
-        Btn_Return_To_Menu.bind( on_press= self.Switch_To_Menu )
+        Btn_Return_To_Menu.bind( on_press = self.Switch_To_Menu )
 
-        # Size Hint (widht, height) = representa el espacio que se quiere utilizar en su totalidad 1 = 100% de la Window screen.
+        # Size Hint (widht, Alto) = representa el espacio que se quiere utilizar en su totalidad 1 = 100% de la Window screen.
         # Size = tamaño que va tomar, en este caso el tamaño de la Window screen de ancho y alto.
 
         Scroll_MainContainer = ScrollView(size_hint=(1, 1), size=(Window.width, Window.height))
@@ -134,21 +158,252 @@ class EncryptionMenu(Screen):
         self.add_widget(Scroll_MainContainer)
 
     def Switch_To_Menu(self, value):
+        """
+        Funcion para cambiar entre ventanas
+        """
         self.manager.current = 'menu_screen'
+      
+    def ShowError( self, err ):
+        """
+        Funcion para desplegar el error de alguno de las operaciones.
+        """
+        GridLayout_ErrorContent = GridLayout(cols = 1)
+        GridLayout_ErrorContent.add_widget( Label(text= str(err) ) )
+        Btn_Close = Button(text="Cerrar" )
+        GridLayout_ErrorContent.add_widget( Btn_Close )
+        Popup_widget = Popup(title="Error", content = GridLayout_ErrorContent)
+        Btn_Close.bind( on_press= Popup_widget.dismiss)
+        Popup_widget.open()
+        return False
+    
+    def SaveKeyPopup(self, value):
+        """
+        Funcion grafica para guardar una clave en el usuario actual.
+        """
+
+        # Verificar si la clave y el mensaje son validos.
+        ValidKey = self.ValidateKey(value)
+
+        if ValidKey:
+            try:
+                GridLayout_SaveKey = BoxLayout(orientation='vertical')
+
+                GridLayout_SaveKey.size_hint = (0.6, 0.5)  # Ancho: 60%, Alto: 50%
+                GridLayout_SaveKey.pos_hint = {'center_x': 0.5, 'center_y': 0.5} 
+
+                # Input para el nombre de la clave.
+                GridLayout_SaveKey.add_widget( Label(text= "Nombre para la clave:" , size_hint_y=0.1, font_size = 25) )
+                self.Input_KeyName = TextInput(size_hint_y=0.1, font_size = 25)
+                GridLayout_SaveKey.add_widget( self.Input_KeyName )
+
+                # Input para la clave de autenticacion.
+                GridLayout_SaveKey.add_widget( Label(text= "Escribe la clave de autenticacion:" , size_hint_y=0.1, font_size = 25) )
+                self.Input_NewAuthenticationKey = TextInput(size_hint_y=0.1, font_size = 25)
+                GridLayout_SaveKey.add_widget( self.Input_NewAuthenticationKey )
+
+                # Añadiendo un espacio respecto al boton de guardar contraseña.
+                Spacer = Widget(size_hint_y = 0.1)
+                GridLayout_SaveKey.add_widget(Spacer)
+
+                # Boton para guardar la contraseña
+                Btn_SaveKey = Button(text="Guardar" , size_hint_y=0.1, font_size = 25)
+                GridLayout_SaveKey.add_widget( Btn_SaveKey )
+                Btn_SaveKey.bind( on_press= self.AddKeyToUserHandler )
+
+                # Añadiendo un espacio respecto al boton de cerrar.
+                Spacer = Widget(size_hint_y = 0.1)
+                GridLayout_SaveKey.add_widget(Spacer)
+
+                # Boton para cerrar el popup
+                Btn_Close = Button(text="Cerrar" , size_hint_y=0.1, font_size = 25)
+                GridLayout_SaveKey.add_widget( Btn_Close )
+
+                Popup_widget = Popup(title="Guardar Clave", content = GridLayout_SaveKey)
+                Btn_Close.bind( on_press= Popup_widget.dismiss)
+                Popup_widget.open()
+
+            except Exception as err:
+                self.ShowError( err )
+
+    def AddKeyToUserHandler(self, value):
+        """
+        Funcion que gestiona el ingreso de una nueva clave a un usuario.
+        """
+        try:
+            # Obteniendo la información necesaria para el objeto de tipo clave.
+            KeyName = self.Input_KeyName.text
+            Key = self.Input_Key.text
+            AuthenticationKey = self.Input_NewAuthenticationKey.text
+
+            # Obteniendo el Usuario.
+            User = self.manager.User
+
+            if KeyName == "" or AuthenticationKey == "":
+                raise Exception(f"El nombre o la clave de autenticacion están vacias." )
+            
+            KeyObject = EncryptionKey(KeyName, Key, AuthenticationKey)
+
+            AddKeyToUser(User, KeyObject)
+            
+        except Exception as err:
+            self.ShowError( err ) 
+
+    def SelectSavedKey(self, value):
+        """
+        Funcion que desplega los componentes graficos para visualizar las claves que el usuario tiene.
+        """
+        
+        # Verificar que el usuario minimo tenga 1 clave.
+        User = self.manager.User
+        AmountOfSavedKeys = GetAmountOfKeys(User)
+
+        if AmountOfSavedKeys == 0:
+            raise Exception(f"Usted no tiene claves guardadas!" )
+
+        # Definiendo una lista para guardar los botones
+        KeyButtons = []
+
+        # Definiendo una lista para guardar las ids de cada clave existente y el nombre de las claves.
+        KeysNames = EncryptionKeyController.GetKeysNames( User )
+
+        GridLayout_Keys = GridLayout(cols = 1)
+        GridLayout_Keys.add_widget( Label(text= "Claves" , font_size = 25) )
+
+        for KeyName in KeysNames:
+            Btn = Button(text = f"{KeyName}", font_size = 25, on_press = self.ValidateAuthenticationKeyGUI)
+
+            # Agregar el boton en el grid.
+            GridLayout_Keys.add_widget(Btn)
+
+            # Agregar el boton en la lista de botones
+            KeyButtons.append(Btn)
+
+        # Añadiendo un espacio respecto al boton de Cerrar
+        Spacer = Widget(size_hint_y = 0.1)
+        GridLayout_Keys.add_widget(Spacer)
+
+        # Boton para cerrar el popup
+        Btn_Close = Button(text="Cerrar" , font_size = 25)
+        GridLayout_Keys.add_widget( Btn_Close )
+
+        self.Popup_widget_SelectKey = Popup(title="Claves Guardadas", content = GridLayout_Keys)
+        Btn_Close.bind( on_press = self.Popup_widget_SelectKey.dismiss)
+        self.Popup_widget_SelectKey.open()
+    
+    def ValidateAuthenticationKeyGUI(self, Btn):
+        """
+        Funcion grafica que desplega el contenido para verificar si la clave es correcta.
+        """
+         
+        try:
+            # Obtener el nombre de la clave através del boton.
+            self.BtnNameToAuthenticate = Btn.text
+
+            # Crear el grid para validar la clave.
+            GridLayout_Authenticationkey = BoxLayout(orientation='vertical')
+
+            GridLayout_Authenticationkey.size_hint = (0.6, 0.5)  # Ancho: 60%, Alto: 50%
+            GridLayout_Authenticationkey.pos_hint = {'center_x': 0.5, 'center_y': 0.5} 
+
+            # Input para la clave de autenticacion.
+            GridLayout_Authenticationkey.add_widget( Label(text= "Escribe la clave de autenticacion:" , size_hint_y=0.1, font_size = 25) )
+            self.Input_AuthenticationKey = TextInput(size_hint_y=0.1, font_size = 25)
+            GridLayout_Authenticationkey.add_widget( self.Input_AuthenticationKey )
+
+            # Añadiendo un espacio respecto al boton de guardar contraseña.
+            Spacer = Widget(size_hint_y = 0.1)
+            GridLayout_Authenticationkey.add_widget(Spacer)
+
+            # Boton para enviar y verificar la contraseña
+            Btn_SaveKey = Button(text="Enviar" , size_hint_y=0.1, font_size = 25)
+            GridLayout_Authenticationkey.add_widget( Btn_SaveKey )
+            Btn_SaveKey.bind( on_press= self.ValidateAuthenticationKey )
+
+            # Añadiendo un espacio respecto al boton de cerrar.
+            Spacer = Widget(size_hint_y = 0.1)
+            GridLayout_Authenticationkey.add_widget(Spacer)
+
+            # Boton para cerrar el popup
+            Btn_Close = Button(text="Cerrar" , size_hint_y=0.1, font_size = 25)
+            GridLayout_Authenticationkey.add_widget( Btn_Close )
+
+            self.Popup_widget_ValidateAuthenticationKey = Popup(title="Validar Clave", content = GridLayout_Authenticationkey)
+            Btn_Close.bind( on_press= self.Popup_widget_ValidateAuthenticationKey.dismiss)
+            self.Popup_widget_ValidateAuthenticationKey.open()
+
+        except Exception as err:
+            self.ShowError( err )
+
+    def ValidateAuthenticationKey(self, value):
+        """
+        Funcionalidad que verifica si la clave de verificacion es correcto o no, si lo es, es colacada como clave para encriptar.
+        """
+
+        # Obtenemos el nombre del boton que llamo la funcion que sera el nombre de la key.
+        BtnName = self.BtnNameToAuthenticate
+
+        # Obtenemos la clave de verificacion ingresada por el usuario y comprobamos.
+        AuthenticationKeyEntered = self.Input_AuthenticationKey.text
+
+        try:
+            if AuthenticationKeyEntered == "":
+                raise Exception(f"La clave de autenticación esta vacia!" )
+
+            KeyObject = EncryptionKeyController.GetKeyByName( BtnName, AuthenticationKeyEntered )
+            KeyValue = KeyObject.value
+
+            # Minimizar los dos popups que se tenian.
+            self.Popup_widget_ValidateAuthenticationKey.dismiss()
+            self.Popup_widget_SelectKey.dismiss()
+
+            # Agregar la clave para la encriptacion.
+            self.Input_Key.text = KeyValue
+            self.Spinner_KeySize.text = SetSizeVerifiedKey(KeyValue)
+
+        except Exception as err:
+            self.ShowError( err )
+            return False
 
     def GenerateAutomaticKey(self, value):
-        KeySize = int(self.Spinner_KeySize.text)
-        Key = hill_genkey(KeySize)
-        #Transformando np.matrix a una lista.
-        Key = np.matrix.tolist(Key)
+        """
+        Si se presiona el boton generar clave, este
+        Automaticamente generara una clave y la pondra en Input_Key
+        """
 
-        KeyToString = str(Key)
-        # Eliminar los corchetes
-        StringKey = KeyToString.replace('[', '').replace(']', '')
-        self.Input_Key.text = StringKey
+        KeySize = int(self.Spinner_KeySize.text)
+
+        self.Input_Key.text = GenerateAutomaticKeyLogic(KeySize)
+
+    def GenerateKey(self, value):
+        """
+        Retorna el formato de la string de forma ordenada
+        """
+        
+        KeySize = int(self.Spinner_KeySize.text)
+        Key = self.Input_Key.text
+
+        return GenerateKeyLogic(KeySize, Key)
+
+    def ValidateMessage(self, value):
+        """
+        Verificar si el mensaje tiene caracteres validos para la encriptacion,
+        es decir si sus caracteres estan en el diccionario de letras en Encryption Logic
+        """
+
+        Message = self.Input_message.text  # El texto del TextInput
+
+        return ValidateMessageLogic(Message)
+
+    def ValidateKey(self, value):
+        """
+        Funcion que verifica si la clave es valida para generarse.
+        """
+        KeySize = self.Spinner_KeySize.text
+        Key = self.Input_Key.text
+
+        return ValidateKeyLogic(KeySize, Key)
 
     def EncryptMessage(self, value):
-
         # Verificar si la clave y el mensaje son validos.
         ValidMessage = self.ValidateMessage(value)
         ValidKey = self.ValidateKey(value)
@@ -187,178 +442,16 @@ class EncryptionMenu(Screen):
 
         except Exception as err:
             return self.ShowError( err )
-        
-    def ShowError( self, err ):
-        GridLayout_ErrorContent = GridLayout(cols = 1)
-        GridLayout_ErrorContent.add_widget( Label(text= str(err) ) )
-        Btn_Close = Button(text="Cerrar" )
-        GridLayout_ErrorContent.add_widget( Btn_Close )
-        Popup_widget = Popup(title="Error", content = GridLayout_ErrorContent)
-        Btn_Close.bind( on_press= Popup_widget.dismiss)
-        Popup_widget.open()
-        return False
-
-    def ValidateMessage(self, value):
-        """
-        Verificar si el mensaje tiene caracteres validos para la encriptacion,
-        es decir si sus caracteres estan en el diccionario de letras en Encryption Logic
-
-        """
-        try:
-            Message = self.Input_message.text  # El texto del TextInput
-            Diccionario_encrypt_ref = Dictionary_encrypt  # Diccionario de encriptación
-
-            # Recorrer cada Character del mensaje y verificar si se encuentra en el diccionario.
-            for Character in Message:
-                if Character not in Diccionario_encrypt_ref.keys():
-                    raise Exception(f"Caracter no válido: {Character}")
-                
-            # Verificar si el mensaje esta vacio.
-            if len(Message) == 0:
-                raise Exception(f"El mensaje no tiene nada, esta vacio." )
-            
-            # Verificar que el mensaje tenga minimo 1 Element.
-            if len(Message) == 1:
-                raise Exception(f"El mensaje apenas tiene 1 Element, tiene que ser más que una letra o numero." )
-            
-            return True
-        
-        except Exception as err:
-            return self.ShowError(err)
-
-    def ValidateKey(self, value):
-        """
-        Funcion que verifica si la clave es valida para generarse.
-        """
-        KeySize = self.Spinner_KeySize.text
-        Key = self.Input_Key.text
-
-        try:
-            # Verificar que la clave tenga algo.
-            if len(Key) == 0:
-                raise Exception(f"La clave no tiene nada, esta vacia." )
-            
-            # Obteniendo el tamaño de la matrix
-            Matrix_Size = int(KeySize) ** 2
-            # Obteniendo la cantidad de enteros en la clave
-            Cnt_Integers = 0
-
-            # Seperar todos los elementos en una lista, se separa cuando se encuentre una coma.
-            StringArray = Key.split(",")
-            StringArray = [Element.strip() for Element in StringArray] # Eliminando todos los espacios vacios que hayan.
-
-            # Obtener la cantidad de elementos y verificar si es un entero.
-            for Element in StringArray:
-                if Element.isdigit():
-                    Cnt_Integers += 1
-                else:
-                    raise ValueError(f"Hay elementos que no son entero o están vacios.")
-
-            # Verificar que la clave tenga la cantidad suficiente de elementos.
-            if Cnt_Integers != Matrix_Size:
-                raise ValueError(f"Elementos incompletos (se necesitan {Matrix_Size} enteros y {Matrix_Size-1} comas) NO puede ser mayor o menor.")
-
-            return True
-        
-        except Exception as err:
-            return self.ShowError(err)
-
-    def GenerateKey(self, value):
-        KeySize = int(self.Spinner_KeySize.text)
-        Key = self.Input_Key.text
-
-        # Transformar cada Element a entero.
-        StringArray = Key.split(",")
-        IntegersArray = [int(Element) for Element in StringArray]
-
-        MatrixKey = []
-
-        for _ in range(KeySize):
-            RowArray = []
-            for _ in range(KeySize):
-                Integer = IntegersArray.pop(0)
-                RowArray.append(Integer)
-            # Append the row to the Key
-            MatrixKey.append(RowArray)
-
-        return MatrixKey
-    
-class LoginScreen(Screen):
-    def __init__(self, **kwargs):
-        super(LoginScreen, self).__init__(**kwargs)
-
-        LoginLayout = BoxLayout(orientation='vertical')
-
-        LoginLayout.size_hint = (0.6, 0.5)  # Width: 60%, Height: 50%
-        LoginLayout.pos_hint = {'center_x': 0.5, 'center_y': 0.5} 
-
-        # El label y el input del usuario.
-        Label_Username = Label(text='Usuario:', size_hint_y=0.1, font_size = 25)
-        LoginLayout.add_widget(Label_Username)
-        self.Input_Username = TextInput(size_hint_y = 0.1, font_size = 24, multiline=False)
-        LoginLayout.add_widget(self.Input_Username)
-
-        # El label y el input de la contraseña.
-        Label_Password = Label(text='Contrasena:', size_hint_y=0.1, font_size = 25)
-        LoginLayout.add_widget(Label_Password)
-        self.Input_Password = TextInput(size_hint_y = 0.1, font_size = 24, password = True, multiline=False)
-        LoginLayout.add_widget(self.Input_Password)
-
-        # Añadiendo un espacio respecto al boton de login
-        Spacer = Widget(size_hint_y = 0.1)
-        LoginLayout.add_widget(Spacer)
-
-        # Boton Login
-        Btn_Login = Button(text='Login', size_hint_y=0.1, font_size = 25, on_press = self.LoginHandler)
-        LoginLayout.add_widget(Btn_Login)
-
-        self.add_widget(LoginLayout)
-
-    def Switch_To_Menu(self):
-        self.manager.current = 'menu_screen'
-
-    def LoginHandler(self, value):
-        print(f"Login.... {self.Input_Username.text} with password: {self.Input_Password.text}")
-        self.Switch_To_Menu()
-
-class OptionsMenuScreen(Screen):
-    def __init__(self, **kwargs):
-        super(OptionsMenuScreen, self).__init__(**kwargs)
-
-        MenuLayout = BoxLayout(orientation='vertical')
-        MenuLayout.size_hint = (0.6, 0.5)  # Width: 60%, Height: 50%
-        MenuLayout.pos_hint = {'center_x': 0.5, 'center_y': 0.5} 
-
-        # Boton para el menu de encriptacion
-        Btn_EncryptionScreen = Button(text='Motor de Encriptacion', size_hint_y = 0.1, font_size = 25, on_press = self.Switch_To_EncryptionMenu)
-        MenuLayout.add_widget(Btn_EncryptionScreen)
-
-        # Añadiendo un espacio respecto al boton de contrasenas
-        Spacer = Widget(size_hint_y = 0.1)
-        MenuLayout.add_widget(Spacer)
-
-        # Boton para el menu de gestion de contrasenas
-        Btn_PasswordsScreen = Button(text='Gestionar Contraseñas', size_hint_y = 0.1, font_size = 25)
-        MenuLayout.add_widget(Btn_PasswordsScreen)
-
-        self.add_widget(MenuLayout)
-
-    def Switch_To_EncryptionMenu(self, value):
-        self.manager.current = 'encryption_menu'
 
 class EncryptionApp(App):
     def build(self):
-        # Crear el Screen Mananger
+        # Crear el Screen Mananger para multiples ventanas.
         sm = ScreenManager()
         sm.add_widget(LoginScreen(name='login_screen'))
         sm.add_widget(OptionsMenuScreen(name='menu_screen'))
         sm.add_widget(EncryptionMenu(name='encryption_menu'))
 
         return sm
-
-    # instance es el widget que generó el evento
-    # Value es el valor actual que tiene el widget
-
 
 if __name__ == "__main__":
     EncryptionApp().run()
