@@ -35,7 +35,7 @@ Cada letra está representada por un número (diccionario).
 Recuerde que cada carpeta de código fuente debe contener un archivo __init.py que permite que python
 reconozca la carpeta como un Módulo y pueda hacer import
 
-- Modulos: Existen 3 modulos en el conjunto de subcarpetas **src**, que estan diseñados para la logica y la interfaz del Usuario
+- Modulos: Existen los siguientes modulos en el conjunto de subcarpetas **src**, que estan diseñados para la logica y la interfaz del Usuario
   1. Encryption --> EncryptionLogic.py ( Logica y metodos para encriptar el mensaje )
 
   2. Gui -->  Console -->  EncryptionGUI_Console.py ( Gui en Consola )
